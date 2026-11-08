@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FileFlex – File Converter</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0a0a0a"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{--bg:#fff;--card:#fff;--tx:#0a0a0a;--mut:#5c5c5c;--bd:#e3e3e3;--ac:#0a0a0a;--onac:#fff;--soft:#f3f3f3;--ok:#e9f8ef;--er:#fdeaea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--card:#111;--tx:#f5f5f5;--mut:#a3a3a3;--bd:#2a2a2a;--ac:#fff;--onac:#000;--soft:#1a1a1a;--ok:#12301f;--er:#3a1618;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#000;--card:#111;--tx:#f5f5f5;--mut:#a3a3a3;--bd:#2a2a2a;--ac:#fff;--onac:#000;--soft:#1a1a1a;--ok:#12301f;--er:#3a1618;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--bd)}
+header b{font-size:20px;color:var(--ac);margin-right:auto}
+main{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+button,select{font:inherit;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:10px 14px;min-height:44px}
+button.p{background:var(--ac);border-color:var(--ac);color:var(--onac);font-weight:600}
+button:disabled{opacity:.5}button:focus-visible,select:focus-visible,#drop:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+h1{font-size:30px;line-height:1.15;margin:8px 0}.sub{color:var(--mut);margin:0 0 18px}
+#drop{position:relative;border:2px dashed var(--bd);border-radius:22px;padding:32px 16px;text-align:center;cursor:pointer;background:var(--card)}
+#drop.on{border-color:var(--ac)}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:14px;margin-top:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mut{color:var(--mut);font-size:14px}
+.bar{height:8px;background:var(--bd);border-radius:9px;overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--ac);transition:width .2s}
+.ok{background:var(--ok);border-radius:12px;padding:10px;margin-top:8px}.er{background:var(--er);border-radius:12px;padding:10px;margin-top:8px}
+.tabs{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto}.tabs button[aria-current=true]{background:var(--ac);color:var(--onac);border-color:var(--ac)}
+.hide{display:none}.sp{flex:1}
+.acc{text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:6px}header{background:var(--card)}.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:20px;margin-right:auto}
+h1{font-size:34px;letter-spacing:-.02em}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 14px}
+.stat{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:10px;text-align:center}.stat b{display:block;font-size:26px;color:var(--ac);line-height:1.1}.stat span{font-size:12px;color:var(--mut)}
+.cats{display:flex;gap:8px;overflow-x:auto;margin:0 0 16px;padding-bottom:4px}.chip{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;background:var(--soft);border-radius:999px;padding:6px 12px;font-size:14px}
+.chip .ic,.ico{color:var(--ac);display:inline-flex}.ico{background:var(--soft);padding:9px;border-radius:12px}
+#drop{border-color:var(--mut);background:var(--soft);border-radius:26px;padding:34px 16px}#drop.on{background:var(--card)}
+.fm{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.fm i{font-style:normal;font-size:12px;background:var(--soft);border-radius:8px;padding:3px 8px;text-transform:uppercase}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes down{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{0%{transform:scale(.92);opacity:0}60%{transform:scale(1.03)}100%{transform:none;opacity:1}}
+@keyframes flo{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes sh{to{background-position:-200% 0}}
+header{animation:down .45s ease both}h1{animation:up .6s .1s ease both}.sub{animation:up .6s .2s ease both}
+.stat{animation:up .6s ease both}.stat:nth-child(1){animation-delay:.3s}.stat:nth-child(2){animation-delay:.4s}.stat:nth-child(3){animation-delay:.5s}
+.cats{animation:up .6s .55s ease both}#drop{animation:up .6s .65s ease both;transition:transform .2s,background .2s,box-shadow .2s}
+@media(hover:hover){#drop:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.08)}}#drop.on{transform:scale(1.02)}
+#drop .book{animation:flo 3s ease-in-out infinite}.logo .book{transition:transform .3s}.logo:hover .book{transform:rotate(-8deg) scale(1.08)}
+section:not(.hide){animation:fade .35s ease}.card.in{animation:up .4s ease both}.ok.pop{animation:pop .4s ease both}
+button{transition:transform .15s,box-shadow .15s,background .15s,opacity .15s}@media(hover:hover){button:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.12)}}button:not(:disabled):active{transform:scale(.97)}
+.bar i{background:linear-gradient(90deg,var(--ac),var(--mut),var(--ac));background-size:200% 100%;animation:sh 1.2s linear infinite}.chip{transition:transform .15s}.chip:hover{transform:translateY(-2px)}
+@keyframes rip{to{transform:scale(1);opacity:0}}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(128,128,128,.55)}100%{box-shadow:0 0 0 22px rgba(128,128,128,0)}}
+@keyframes bump{from{transform:translateY(0) scale(1.1)}to{transform:translateY(-8px) scale(1.35) rotate(-6deg)}}
+@keyframes dropd{0%{transform:scale(1.04)}40%{transform:scale(.96)}70%{transform:scale(1.01)}100%{transform:none}}
+@keyframes land{0%{opacity:0;transform:translateY(-26px) scale(.96)}60%{opacity:1;transform:translateY(4px) scale(1.01)}100%{opacity:1;transform:none}}
+button,#drop{position:relative;overflow:hidden}
+.rip{position:absolute;border-radius:50%;background:currentColor;opacity:.28;transform:scale(0);animation:rip .6s ease-out forwards;pointer-events:none}
+#drop.on{animation:ring 1s ease-out infinite;border-style:solid}#drop.on .book{animation:bump .45s ease-in-out infinite alternate}
+#drop.dropped{animation:dropd .5s ease}.card.in{animation:land .55s cubic-bezier(.2,.8,.2,1) both}
+#drop{display:block;cursor:pointer}.btnx{display:inline-block;border-radius:12px;padding:10px 14px;min-height:44px;line-height:24px;background:var(--ac);color:var(--onac);font-weight:600}#drop:focus-within{outline:3px solid var(--ac);outline-offset:2px}
+input[type=number]{font:inherit;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:10px;min-height:44px;width:96px}
+input[type=color]{min-height:44px;width:56px;border-radius:12px;border:1px solid var(--bd);background:var(--card);padding:2px}#rk{width:20px;height:20px;vertical-align:middle}
+.rn{flex:1;min-width:120px;font:inherit;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:10px;min-height:44px}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--ac);vertical-align:middle}
+#pv canvas{width:100%;height:auto;border-radius:12px;border:1px solid var(--bd);background:repeating-conic-gradient(#d0d0d0 0 25%,#fff 0 50%) 0 0/16px 16px}#pvo{cursor:crosshair}#pv .row>div{flex:1;min-width:140px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style></head><body>
+<header><span class="logo"><svg width="30" height="30" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="book"><path d="M16 8c-2.5-2-6-3-10-3v18c4 0 7.5 1 10 3 2.5-2 6-3 10-3V5c-4 0-7.5 1-10 3z"/><path d="M16 8v18"/></svg>FileFlex</span><button id="inst" class="hide" type="button">Install app</button><button id="th" aria-label="Toggle dark mode">☾</button></header>
+<main>
+<div class="tabs" role="tablist"><button data-t="c" aria-current="true">Convert</button><button data-t="h">History</button><button data-t="a">About</button><button data-t="s">Support</button></div>
+<section id="c"><h1>Convert Your Files <span class="acc">Easily</span></h1><p class="sub">Fast, simple and secure file conversion for documents, images, spreadsheets, subtitles and audio.</p>
+<div id="lib" class="card hide" role="alert" style="margin:0 0 14px"></div><div id="stats" class="stats"></div><div id="cats" class="cats"></div>
+<label id="drop" for="fi"><svg width="48" height="48" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="book"><path d="M16 8c-2.5-2-6-3-10-3v18c4 0 7.5 1 10 3 2.5-2 6-3 10-3V5c-4 0-7.5 1-10 3z"/><path d="M16 8v18"/></svg><br><b id="dt">Drop your file here</b><div class="mut">or</div><span class="p btnx" style="margin-top:6px">Choose File</span>
+<div class="mut" style="margin-top:10px">Documents, images, spreadsheets, subtitles, audio, video (audio only) · up to 100 MB</div><input id="fi" type="file" multiple aria-label="Choose files to convert" style="position:absolute;left:0;top:0;width:1px;height:1px;opacity:0"></label>
+<div id="opt" class="card hide"><div class="row"><label class="mut">Image quality <input id="qq" type="range" min="50" max="100" value="92"></label><label class="mut">Max width <select id="mw"><option value="0">Original</option><option value="3840">3840 px</option><option value="1920">1920 px</option><option value="1280">1280 px</option><option value="800">800 px</option></select></label></div><div class="row" style="margin-top:10px"><label class="mut">Width (px) <input id="rw" type="number" min="1" max="10000" inputmode="numeric" placeholder="Auto"></label><label class="mut">Height (px) <input id="rh" type="number" min="1" max="10000" inputmode="numeric" placeholder="Auto"></label><label class="mut">Scale (%) <input id="rs" type="number" min="1" max="500" inputmode="numeric" placeholder="100"></label><label class="mut">Resize mode <select id="rm"><option value="fit">Fit inside (keep ratio)</option><option value="stretch">Exact size (stretch)</option><option value="cover">Exact size (crop to fill)</option><option value="pad">Exact size (add background bars)</option></select></label></div>
+<div class="row" style="margin-top:10px"><label class="mut">Background <select id="bg"><option value="auto">Auto</option><option value="white">White</option><option value="black">Black</option><option value="transparent">Transparent</option><option value="custom">Custom colour</option></select></label><label class="mut">Colour <input id="bgc" type="color" value="#ffffff" aria-label="Custom background colour"></label><label class="mut"><input id="bgr" type="checkbox"> Replace plain background</label><label class="mut">Replace <select id="bgm"><option value="edge">edge-connected background</option><option value="key">a specific colour</option><option value="ai">AI person cut-out (portraits)</option></select></label><label class="mut">Colour to replace <input id="bgk" type="color" value="#2060c0"></label><label class="mut">Tolerance <input id="bgt" type="range" min="5" max="90" value="35"></label></div>
+<div id="pv" class="hide" style="margin-top:10px"><div class="row" style="align-items:flex-start"><div><div class="mut">Original · tap to pick the background colour</div><canvas id="pvo"></canvas></div><div><div class="mut">Result (preview)</div><canvas id="pvr"></canvas></div></div><div id="pvm" class="mut" role="status"></div></div>
+<div class="row" style="margin-top:10px"><label class="mut">Target size (MB) <input id="tsz" type="number" min="0.05" step="0.1" inputmode="decimal" placeholder="Auto" aria-label="Target file size in megabytes"></label><button type="button" data-mb="0.5">0.5 MB</button><button type="button" data-mb="1">1 MB</button><button type="button" data-mb="2">2 MB</button><button type="button" data-mb="5">5 MB</button><button type="button" data-mb="">Auto</button></div><div class="mut" style="margin-top:8px">Quality applies to JPG, WEBP and PDF image output. Width, Height and Scale resize any image. With both Width and Height, Resize mode decides how the picture fits: inside the box, stretched, cropped to fill, or padded with background bars (the last three give exactly that pixel size). Background fills transparent areas; JPG and PDF always get a solid background, and Auto means white for them. Target size makes JPG, WEBP and PNG output at most that many MB by lowering quality, then size (and overrides the quality slider). It is not applied to PDF output. The preview shows the first waiting image with your background settings; tap the original to pick the backdrop colour. “AI person cut-out” finds the person automatically (best for portraits; the first use downloads the AI model, so it needs internet). Choosing White, Black, Custom or Transparent turns on “Replace plain background”, which recolours the backdrop around the picture. “Edge-connected” follows the backdrop in from the edges (it copes with gradients and shadows; raise Tolerance if some is left behind). “A specific colour” replaces every pixel close to the colour you pick (good for a blue passport-photo backdrop). It works on plain or smooth backgrounds and can’t cut a person out of a busy scene.</div></div>
+<div id="bar" class="row hide" style="margin-top:12px"><button class="p" id="ca">Convert All</button><button id="da">Download All</button><button id="dz">Download ZIP</button><button id="mp" class="hide">Merge PDFs</button><button id="mi" class="hide">Images → one PDF</button><span class="sp"></span><button id="cl">Clear</button></div>
+<div id="q"></div>
+<p class="mut" style="text-align:center;margin-top:18px">Your files are converted on your device and never uploaded. Document conversions (PDF, DOCX, TXT, RTF) keep the text only; images, tables and styling are not carried over. History saves only file names and dates in this browser.</p>
+<div class="card" style="margin-top:14px"><b>FileFlex for Android and laptop</b><ul class="mut" style="margin:8px 0 0;padding-left:20px"><li><b id="nopt"></b> conversion options and 6 file tools</li><li>Convert, compress, resize, split, and merge</li><li>Files processed locally on your Android phone or laptop, without uploads</li></ul></div>
+<div class="card" style="margin-top:14px"><b>Your files stay on your device.</b><p class="mut" style="margin:6px 0 0">Online converters make you upload a copy of your file to a server you don’t control. FileFlex converts in your browser, so your files are never uploaded.</p></div><h2 style="margin:22px 0 0;font-size:20px">Supported formats</h2><div id="fmts"></div><p class="mut" style="text-align:center;margin-top:20px">Need help? <a href="mailto:vinayakgoudkasani@gmail.com?subject=FileFlex%20support" style="color:var(--tx)">Contact support</a></p></section>
+<section id="h" class="hide"><h1>Conversion History</h1><button id="ch">Clear History</button><div id="hl"></div></section>
+<section id="a" class="hide"><h1>About</h1><div class="card"><p>FileFlex converts files entirely in your browser. Supported: images (JPG, PNG, WEBP, BMP, GIF → each other or PDF), documents (PDF, DOCX, PPTX, TXT, RTF, MD, HTML output), spreadsheets (XLSX, CSV, TSV), subtitles (SRT, VTT, TXT), audio (MP3, M4A, WAV, OGG, FLAC → WAV or MP3), video audio extraction (MP4, MOV, WebM → MP3 or WAV), plus Merge PDFs, Split pages, Images → one PDF, quality and resize options, and Download ZIP.</p>
+<p class="mut">Document conversions carry text only (DOCX → HTML keeps basic formatting). PPTX input gives the slide text only; text → PPTX makes one slide per paragraph block; PDF → PPTX makes one picture slide per page (not editable). PDF input needs real text; scanned PDFs are read with OCR (English only, slow and approximate, and it downloads an OCR engine the first time). Text with non-Latin characters is written to PDF as page images, so it can’t be selected or searched. XLSX exports the first sheet. Video-to-video conversion, HEIC/TIFF/AVIF, legacy .doc/.ppt/.xls files and EPUB are not supported here; they need server-side tools. Anything unsupported is rejected, never faked.</p></div></section>
+<section id="s" class="hide"><h1>Contact Support</h1><div class="card"><p>Found a problem or need a format added? Email us and we’ll help.</p><p><b>vinayakgoudkasani@gmail.com</b></p><div class="row"><a href="mailto:vinayakgoudkasani@gmail.com?subject=FileFlex%20support" style="text-decoration:none"><button class="p" type="button">Email Support</button></a><button id="cp" type="button">Copy email</button></div><p class="mut">Please include the file type, the format you chose, and the message you saw. Don’t attach private files.</p></div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s),MAX=100*1048576;
+const R={jpg:['png','webp','pdf'],png:['jpg','webp','pdf'],webp:['jpg','png','pdf'],bmp:['jpg','png','webp','pdf'],gif:['jpg','png','webp','pdf'],csv:['xlsx','tsv'],tsv:['csv','xlsx'],xlsx:['csv','tsv'],txt:['pdf','docx','rtf','html','pptx'],docx:['pdf','txt','rtf','html','pptx'],rtf:['pdf','docx','txt','html','pptx'],md:['html','txt','pdf','docx','rtf','pptx'],pdf:['txt','docx','rtf','html','jpg','png','pptx'],pptx:['pdf','docx','txt','rtf','html'],srt:['vtt','txt'],vtt:['srt','txt'],mp3:['wav'],wav:['mp3'],m4a:['wav','mp3'],ogg:['wav','mp3'],flac:['wav','mp3'],mp4:['mp3','wav'],mov:['mp3','wav'],webm:['mp3','wav']};
+const M={jpg:'image/jpeg',png:'image/png',webp:'image/webp',csv:'text/csv',tsv:'text/tab-separated-values',txt:'text/plain',html:'text/html',md:'text/markdown',pptx:'application/vnd.openxmlformats-officedocument.presentationml.presentation',srt:'application/x-subrip',vtt:'text/vtt',zip:'application/zip',wav:'audio/wav',mp3:'audio/mpeg',pdf:'application/pdf',rtf:'application/rtf',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',xlsx:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'};
+const KNOWN=Object.keys(R);let items=[];
+const ext=n=>{const e=(n.split('.').pop()||'').toLowerCase();return e==='jpeg'?'jpg':e};
+const fmt=n=>n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(1)+' MB';
+const safe=(n,t)=>(n.replace(/\.[^.]*$/,'').replace(/[^\w\- ]+/g,'_').slice(0,80)||'file')+'.'+t;
+function el(t,c,x){const e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function check(f){const e=ext(f.name);
+ if(['doc','ppt','xls','odt','odp','ods','pages','key','numbers'].includes(e))return 'The older format ".'+e+'" can’t be read in the browser. Please re-save it as '+({doc:'.docx',odt:'.docx',pages:'.docx',ppt:'.pptx',odp:'.pptx',key:'.pptx',xls:'.xlsx',ods:'.xlsx',numbers:'.xlsx'})[e]+' (File → Save as) and try again.';
+ if(!KNOWN.includes(e))return 'Unsupported file type ".'+e+'".';
+ if(!R[e])return 'Unsupported conversion: '+e.toUpperCase()+' can’t be converted in this version.';
+ if(!f.size)return 'Corrupted or invalid file: the file is empty.';
+ if(f.size>MAX)return 'File too large. The limit is 100 MB.';return null}
+function add(fs){pulse();[...fs].forEach(f=>{const e=check(f),from=ext(f.name);items.push({id:crypto.randomUUID(),f,from,to:(R[from]||[''])[0],st:e?'Failed':'Waiting',p:0,err:e})});draw()}
+const csvq=s=>/[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+
+const SK=new Set(['fonttbl','colortbl','stylesheet','info','pict','header','footer','footnote','generator','listtable','listoverridetable','rsidtbl','themedata','colorschememapping','datastore','latentstyles','xmlnstbl','fldinst','bkmkstart','bkmkend','object']);
+const SYM={lquote:'\u2018',rquote:'\u2019',ldblquote:'\u201C',rdblquote:'\u201D',endash:'\u2013',emdash:'\u2014',bullet:'\u2022',tab:'\t',par:'\n',line:'\n',sect:'\n',page:'\n'};
+function rtf2txt(s){let o='',i=0,st=[],sk=false,uc=1;
+ while(i<s.length){const c=s[i];
+  if(c==='{'){st.push([sk,uc]);i++;if(s[i]==='\\'){if(s[i+1]==='*')sk=true;else{const m=/^\\([a-zA-Z]+)/.exec(s.slice(i,i+30));if(m&&SK.has(m[1]))sk=true}}}
+  else if(c==='}'){[sk,uc]=st.pop()||[false,1];i++}
+  else if(c==='\\'){const n=s[i+1];
+   if(n==="'"){if(!sk)o+=new TextDecoder('windows-1252').decode(new Uint8Array([parseInt(s.substr(i+2,2),16)||63]));i+=4}
+   else if(/[a-zA-Z]/.test(n)){const m=/^\\([a-zA-Z]+)(-?\d+)? ?/.exec(s.slice(i,i+40));const w=m[1],v=m[2];i+=m[0].length;
+    if(w==='u'){if(!sk)o+=String.fromCharCode((+v+65536)%65536);for(let k=0;k<uc;k++){if(s[i]==='\\'&&s[i+1]==="'")i+=4;else i++}}
+    else if(w==='uc')uc=+v;else if(SYM[w]&&!sk)o+=SYM[w]}
+   else if(n==='\\'||n==='{'||n==='}'){if(!sk)o+=n;i+=2}
+   else if(n==='~'){if(!sk)o+='\u00A0';i+=2}else i+=2}
+  else{if(c!=='\r'&&c!=='\n'&&!sk)o+=c;i++}}
+ return o.replace(/\n{3,}/g,'\n\n').trim()}
+function mkRtf(t){let o='{\\rtf1\\ansi\\ansicpg1252\\deff0{\\fonttbl{\\f0\\fswiss Arial;}}\\f0\\fs22\n';t=t.replace(/\r/g,'');
+ for(let i=0;i<t.length;i++){const ch=t[i],c=t.charCodeAt(i);
+  if(ch==='\n')o+='\\par\n';else if(ch==='\t')o+='\\tab ';else if(ch==='\\'||ch==='{'||ch==='}')o+='\\'+ch;
+  else if(c<32)continue;else if(c>126)o+='\\u'+(c>32767?c-65536:c)+'?';else o+=ch}
+ return new Blob([o+'}'],{type:M.rtf})}
+function mkPdf(t){const t0=t;t=t.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/[\u2013\u2014]/g,'-').replace(/\u2026/g,'...').replace(/\u2022/g,'*').replace(/\u00A0/g,' ').replace(/\t/g,'    ').replace(/\r/g,'');
+ if(/[^\x0A\x20-\x7E\xA0-\xFF]/.test(t))return mkPdfImg(t0);
+ const d=new jspdf.jsPDF({unit:'pt',format:'a4'}),W=d.internal.pageSize.getWidth()-100,H=d.internal.pageSize.getHeight()-60;
+ d.setFont('helvetica');d.setFontSize(11);let y=60;
+ for(const para of t.split('\n')){for(const l of(para===''?['']:d.splitTextToSize(para,W))){if(y>H){d.addPage();y=60}if(l)d.text(l,50,y);y+=15}}
+ return d.output('blob')}
+function mkPdfImg(t){const S=2,W=595*S,H=842*S,M=50*S,LH=16*S,FS=11*S,MW=W-2*M,font=FS+'px "Noto Sans","Segoe UI",Roboto,Arial,sans-serif';
+ const mk=()=>{const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,W,H);x.fillStyle='#000';x.font=font;x.textBaseline='alphabetic';return[c,x]};
+ let[c,x]=mk();const lines=[];
+ for(const para of t.replace(/\r/g,'').replace(/\t/g,'    ').split('\n')){if(!para.trim()){lines.push('');continue}
+  let cur='';for(const w of para.split(/(\s+)/)){if(!w)continue;if(x.measureText(cur+w).width<=MW){cur+=w;continue}
+   if(cur.trim())lines.push(cur.trimEnd());cur='';if(x.measureText(w).width<=MW){cur=w.trimStart();continue}
+   for(const ch of w){if(x.measureText(cur+ch).width>MW){lines.push(cur);cur=''}cur+=ch}}
+  lines.push(cur.trimEnd())}
+ const per=Math.floor((H-2*M)/LH),d=new jspdf.jsPDF({unit:'pt',format:'a4'});
+ for(let p=0;p*per<Math.max(lines.length,1);p++){if(p){[c,x]=mk();d.addPage()}
+  lines.slice(p*per,(p+1)*per).forEach((l,i)=>{if(l)x.fillText(l,M,M+FS+i*LH)});
+  d.addImage(c.toDataURL('image/png'),'PNG',0,0,595,842)}
+ return d.output('blob')}
+async function ocrPdf(pdf,it){
+ if(!await ensure(['Tesseract','OCR',[J+'tesseract.js@5.1.1/dist/tesseract.min.js']]))throw Error('This PDF is scanned and needs OCR, but the OCR engine could not be downloaded. Check your internet connection and try again.');
+ const w=await Tesseract.createWorker('eng'),out=[],sc=pdf.numPages>20?2:3;
+ try{for(let n=1;n<=pdf.numPages;n++){const pg=await pdf.getPage(n),vp=pg.getViewport({scale:sc}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+  await pg.render({canvasContext:x,viewport:vp}).promise;const r=await w.recognize(c);out.push(r.data.text.trim());
+  if(it){it.p=Math.max(10,Math.round(n/pdf.numPages*90));it.msg='Reading scanned page '+n+' of '+pdf.numPages+' (OCR)';draw()}}}
+ finally{await w.terminate()}
+ const t=out.join('\n\n').trim();if(!t)throw Error('No text could be recognized in this scanned PDF.');return t}
+async function mkDocx(t){const x=s=>s.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+ const body=t.replace(/\r/g,'').split('\n').map(p=>'<w:p><w:r><w:t xml:space="preserve">'+x(p)+'</w:t></w:r></w:p>').join('');
+ const H='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',z=new JSZip();
+ z.file('[Content_Types].xml',H+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>');
+ z.file('_rels/.rels',H+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>');
+ z.file('word/document.xml',H+'<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>'+body+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>');
+ return z.generateAsync({type:'blob',mimeType:M.docx,compression:'DEFLATE'})}
+async function readPdf(f,it){const pdf=await pdfOpen(f);
+ const out=[];
+ for(let n=1;n<=pdf.numPages;n++){const tc=await(await pdf.getPage(n)).getTextContent(),rows=[];
+  for(const it of tc.items){if(!it.str)continue;const y=Math.round(it.transform[5]);let r=rows.find(r=>Math.abs(r.y-y)<=3);if(!r){r={y,fs:0,its:[]};rows.push(r)}r.fs=Math.max(r.fs,it.height||10);r.its.push({x:it.transform[4],s:it.str,w:it.width})}
+  rows.sort((a,b)=>b.y-a.y);let prev=null;
+  for(const r of rows){r.its.sort((a,b)=>a.x-b.x);let s='',e=null;
+   for(const i of r.its){if(e!==null&&i.x-e>1&&!s.endsWith(' ')&&!i.s.startsWith(' '))s+=' ';s+=i.s;e=i.x+i.w}
+   if(prev&&prev.y-r.y>prev.fs*1.8)out.push('');out.push(s.trim());prev=r}
+  out.push('')}
+ const t=out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+ if(!t)return ocrPdf(pdf,it);return t}
+async function readText(f,from,it){
+ if(from==='txt'){const t=await f.text();if(t.includes('\0'))throw Error('Corrupted or invalid file: not a text file.');return t}
+ if(from==='docx'){const r=await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()}).catch(()=>{throw Error('Corrupted or invalid DOCX file.')});return r.value.replace(/\n\n/g,'\n')}
+ if(from==='pptx'){const z=await JSZip.loadAsync(await f.arrayBuffer()).catch(()=>{throw Error('Corrupted or invalid PPTX file.')});
+  const names=Object.keys(z.files).filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n)).sort((a,b)=>a.match(/\d+/)[0]-b.match(/\d+/)[0]);
+  if(!names.length)throw Error('Corrupted or invalid PPTX file: no slides found.');
+  const dec=t=>t.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&'),out=[];
+  for(let i=0;i<names.length;i++){const x=await z.file(names[i]).async('string');
+   const ps=x.split('</a:p>').map(p=>dec((p.match(/<a:t(?: [^>]*)?>[^<]*<\/a:t>/g)||[]).map(m=>m.replace(/<[^>]+>/g,'')).join(''))).filter(t=>t.trim());out.push('Slide '+(i+1)+'\n'+ps.join('\n'))}
+  return out.join('\n\n')}
+ if(from==='md')return mdText(await f.text());
+ if(from==='rtf'){const t=await f.text();if(!t.trimStart().startsWith('{\\rtf'))throw Error('Corrupted or invalid RTF file.');return rtf2txt(t)}
+ return readPdf(f,it)}
+async function writeDoc(t,to){if(!t.trim())throw Error('The file contains no text to convert.');
+ return to==='txt'?new Blob([t],{type:M.txt}):to==='pdf'?mkPdf(t):to==='rtf'?mkRtf(t):to==='pptx'?mkPptx(t):mkDocx(t)}
+const IMG=['jpg','png','webp','bmp','gif'],DOCS=['txt','docx','rtf','pdf','md','pptx'],AUD=['mp3','wav','m4a','ogg','flac','mp4','mov','webm'],LIBERR='A converter library did not load. Check your internet connection and reload.';
+const qv=()=>+$('#qq').value/100,esc=t=>t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const shell=(b,t)=>new Blob(['<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(t)+'</title></head><body>'+b+'</body></html>'],{type:M.html});
+function mdText(t){const h=marked.parse(t).replace(/<\/(p|h\d|li|pre|blockquote|tr)>|<br\s*\/?>/g,'\n$&');return new DOMParser().parseFromString(h,'text/html').body.textContent.replace(/\n{3,}/g,'\n\n').trim()}
+const fixTs=(x,sep)=>x.replace(/(?:(\d+):)?(\d{1,2}):(\d{2})[.,](\d{1,3})/,(m,h,mi,sc,ms)=>(h||'0').padStart(2,'0')+':'+mi.padStart(2,'0')+':'+sc+sep+ms.padEnd(3,'0'));
+function cues(t){return t.replace(/\r/g,'').replace(/^\uFEFF/,'').split(/\n{2,}/).map(b=>{const ls=b.split('\n'),i=ls.findIndex(l=>l.includes('-->'));if(i<0)return null;const[a,z]=ls[i].split('-->');return{s:a.trim(),e:z.trim().split(/\s+/)[0],t:ls.slice(i+1).join('\n').trim()}}).filter(Boolean)}
+function subs(t,to){const cs=cues(t);if(!cs.length)throw Error('No subtitle cues found. The file may be corrupted.');
+ if(to==='txt')return cs.map(c=>c.t.replace(/<[^>]+>/g,'')).join('\n');
+ const sep=to==='srt'?',':'.',b=cs.map((c,i)=>(to==='srt'?(i+1)+'\n':'')+fixTs(c.s,sep)+' --> '+fixTs(c.e,sep)+'\n'+c.t).join('\n\n')+'\n';return to==='vtt'?'WEBVTT\n\n'+b:b}
+let SEG=null;
+async function getSeg(){if(SEG)return SEG;const V='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+ try{const m=await import(V+'/vision_bundle.mjs'),fs=await m.FilesetResolver.forVisionTasks(V+'/wasm');
+  SEG=await m.ImageSegmenter.createFromOptions(fs,{baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite'},runningMode:'IMAGE',outputCategoryMask:true,outputConfidenceMasks:true});return SEG}
+ catch(e){throw Error('The AI cut-out could not load. It needs an internet connection and a recent Chrome. Try “edge-connected” or “a specific colour” instead.')}}
+async function aiCut(ic,rf,b){const sg=await getSeg(),k=Math.min(1,1024/Math.max(b.width,b.height)),sw=Math.max(1,Math.round(b.width*k)),sh=Math.max(1,Math.round(b.height*k)),sc=document.createElement('canvas');sc.width=sw;sc.height=sh;sc.getContext('2d').drawImage(b,0,0,sw,sh);
+ let a=null,mw=0,mh=0;
+ sg.segment(sc,r=>{const cm=r.confidenceMasks;if(cm&&cm.length){const m=cm[cm.length-1];a=new Float32Array(m.getAsFloat32Array());mw=m.width;mh=m.height}else if(r.categoryMask){const m=r.categoryMask,u=m.getAsUint8Array();a=new Float32Array(u.length);for(let i=0;i<u.length;i++)a[i]=u[i]>0?1:0;mw=m.width;mh=m.height}});
+ if(!a||a.length!==mw*mh)throw Error('The AI cut-out returned no result.');
+ let bs=0,bn=0,cs=0,cn=0;for(let y=0;y<mh;y++)for(let x=0;x<mw;x++){const v=a[y*mw+x],e=Math.min(x,y,mw-1-x,mh-1-y);if(e<mw*.06){bs+=v;bn++}else if(Math.abs(x-mw/2)<mw*.2&&Math.abs(y-mh/2)<mh*.2){cs+=v;cn++}}
+ if(bn&&cn&&bs/bn>cs/cn)for(let i=0;i<a.length;i++)a[i]=1-a[i];
+ const mc=document.createElement('canvas');mc.width=mw;mc.height=mh;const mx=mc.getContext('2d'),mi=mx.createImageData(mw,mh);
+ for(let i=0;i<a.length;i++){const t=Math.min(1,Math.max(0,(a[i]-.3)/.4)),v=t*t*(3-2*t)*255;mi.data[i*4]=mi.data[i*4+1]=mi.data[i*4+2]=v;mi.data[i*4+3]=255}mx.putImageData(mi,0,0);
+ const sm=document.createElement('canvas');sm.width=ic.width;sm.height=ic.height;const sx=sm.getContext('2d');sx.filter='blur('+Math.max(.5,ic.width/600)+'px)';sx.imageSmoothingQuality='high';sx.drawImage(mc,0,0,ic.width,ic.height);
+ const x=ic.getContext('2d'),im=x.getImageData(0,0,ic.width,ic.height),al=sx.getImageData(0,0,ic.width,ic.height).data,d=im.data,C=rf?[parseInt(rf.slice(1,3),16),parseInt(rf.slice(3,5),16),parseInt(rf.slice(5,7),16)]:null;
+ for(let i=0;i<d.length;i+=4){const t=al[i]/255;if(C){d[i]=d[i]*t+C[0]*(1-t);d[i+1]=d[i+1]*t+C[1]*(1-t);d[i+2]=d[i+2]*t+C[2]*(1-t);d[i+3]=255}else d[i+3]=d[i+3]*t}
+ x.putImageData(im,0,0)}
+let pvTok=0,pvT=null,pvKey='';
+const pvItem=()=>items.find(i=>IMG.includes(i.from)&&i.st==='Waiting');
+function schedPv(){clearTimeout(pvT);pvT=setTimeout(renderPv,250)}
+function pvCheck(){const k=items.filter(i=>IMG.includes(i.from)&&i.st==='Waiting').map(i=>i.id).join();if(k!==pvKey){pvKey=k;schedPv()}}
+async function renderPv(){const it=pvItem(),box=$('#pv');if(!it){box.classList.add('hide');return}box.classList.remove('hide');const tok=++pvTok,msg=$('#pvm');
+ try{if(!it.pvb){const bm=await createImageBitmap(it.f),k=Math.min(1,420/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(bm.width*k));c.height=Math.max(1,Math.round(bm.height*k));c.getContext('2d').drawImage(bm,0,0,c.width,c.height);it.pvc=c;it.pvb=await new Promise(r=>c.toBlob(r,'image/png'))}
+  if(tok!==pvTok)return;const o=$('#pvo');o.width=it.pvc.width;o.height=it.pvc.height;o.getContext('2d').drawImage(it.pvc,0,0);
+  msg.textContent=$('#bgm').value==='ai'&&$('#bgr').checked?'Working… (the first AI run downloads the model)':'';
+  const r=await toCanvas(it.pvb,false,true);if(tok!==pvTok)return;const rr=$('#pvr');rr.width=r.width;rr.height=r.height;rr.getContext('2d').drawImage(r,0,0);msg.textContent=''}
+ catch(e){if(tok===pvTok)msg.textContent=e.message||'Preview failed.'}}
+const dist2=(d,p,r,g,b)=>{const a=d[p]-r,e=d[p+1]-g,f=d[p+2]-b;return a*a+e*e+f*f};
+function replaceBg(c,color,tol,mode,keyHex){
+ const x=c.getContext('2d'),w=c.width,h=c.height,im=x.getImageData(0,0,w,h),d=im.data,N=w*h,hex=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+ let r0,g0,b0;
+ if(mode==='key')[r0,g0,b0]=hex(keyHex);
+ else{const rs=[],gs=[],bs=[],add=i=>{const p=i*4;if(d[p+3]>200){rs.push(d[p]);gs.push(d[p+1]);bs.push(d[p+2])}},sx=Math.max(1,w/200|0),sy=Math.max(1,h/200|0);
+  for(let i=0;i<w;i+=sx){add(i);add((h-1)*w+i)}for(let j=0;j<h;j+=sy){add(j*w);add(j*w+w-1)}
+  if(!rs.length)return;const med=a=>(a.sort((p,q)=>p-q),a[a.length>>1]);r0=med(rs);g0=med(gs);b0=med(bs)}
+ const T=tol,T2=T*T,S2=T*T*.16,L2=4*T*T,F=T*1.6,mask=new Uint8Array(N),C=color?hex(color):[0,0,0];
+ if(mode==='key'){for(let i=0;i<N;i++)if(dist2(d,i*4,r0,g0,b0)<=T2)mask[i]=1}
+ else{const q=new Int32Array(N);let qh=0,qt=0;
+  const tp=(i,from)=>{if(mask[i])return;const p=i*4,dr=dist2(d,p,r0,g0,b0);if(dr<=T2||(from>=0&&dr<=L2&&dist2(d,p,d[from*4],d[from*4+1],d[from*4+2])<=S2)){mask[i]=1;q[qt++]=i}};
+  for(let i=0;i<w;i++){tp(i,-1);tp((h-1)*w+i,-1)}for(let j=0;j<h;j++){tp(j*w,-1);tp(j*w+w-1,-1)}
+  while(qh<qt){const i=q[qh++],xx=i%w,yy=(i-xx)/w;if(xx>0)tp(i-1,i);if(xx<w-1)tp(i+1,i);if(yy>0)tp(i-w,i);if(yy<h-1)tp(i+w,i)}}
+ for(let i=0;i<N;i++){const p=i*4;
+  if(mask[i]){if(color){d[p]=C[0];d[p+1]=C[1];d[p+2]=C[2];d[p+3]=255}else d[p+3]=0;continue}
+  const xx=i%w,near=(xx>0&&mask[i-1])||(xx<w-1&&mask[i+1])||(i>=w&&mask[i-w])||(i<N-w&&mask[i+w]);if(!near)continue;
+  const dr=Math.sqrt(dist2(d,p,r0,g0,b0));if(dr>F)continue;const t=Math.min(1,Math.max(0,1-(dr-T)/(F-T)));
+  if(color){d[p]=d[p]*(1-t)+C[0]*t;d[p+1]=d[p+1]*(1-t)+C[1]*t;d[p+2]=d[p+2]*(1-t)+C[2]*t}else d[p+3]=d[p+3]*(1-t)}
+ x.putImageData(im,0,0)}
+async function toCanvas(f,solid,pv){const b=await createImageBitmap(f).catch(()=>{throw Error('Corrupted or invalid image file.')});
+ const wv=pv?0:parseInt($('#rw').value)||0,hv=pv?0:parseInt($('#rh').value)||0,sp=pv?0:parseFloat($('#rs').value)||0,rm=$('#rm').value,mw=pv?0:+$('#mw').value;let w=b.width,h=b.height,dx=0,dy=0,dw,dh;
+ if(wv&&hv){w=wv;h=hv;if(rm==='stretch'){dw=wv;dh=hv}else{const k=rm==='cover'?Math.max(wv/b.width,hv/b.height):Math.min(wv/b.width,hv/b.height);dw=Math.round(b.width*k);dh=Math.round(b.height*k);if(rm==='fit'){w=dw;h=dh}else{dx=Math.round((wv-dw)/2);dy=Math.round((hv-dh)/2)}}}
+ else{if(wv){w=wv;h=Math.round(b.height*wv/b.width)}else if(hv){h=hv;w=Math.round(b.width*hv/b.height)}else if(sp>0){w=Math.round(b.width*sp/100);h=Math.round(b.height*sp/100)}else if(mw&&b.width>mw){h=Math.round(b.height*mw/b.width);w=mw}dw=w;dh=h}
+ w=Math.max(1,w);h=Math.max(1,h);dw=Math.max(1,dw);dh=Math.max(1,dh);if(w>10000||h>10000||w*h>8e7||dw>10000||dh>10000)throw Error('Output size too large. Keep width and height under 10,000 px (and under 80 megapixels).');
+ const bg=$('#bg').value,rb=$('#bgr').checked,col=bg==='white'?'#ffffff':bg==='black'?'#000000':bg==='custom'?$('#bgc').value:null,wantT=bg==='transparent'&&!solid,fill=col||(solid?'#ffffff':null);
+ const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');if(fill){x.fillStyle=fill;x.fillRect(0,0,w,h)}x.imageSmoothingQuality='high';
+ if(rb){const ic=document.createElement('canvas');ic.width=dw;ic.height=dh;const ix=ic.getContext('2d'),rf=wantT?null:(col||'#ffffff');ix.imageSmoothingQuality='high';if(rf){ix.fillStyle=rf;ix.fillRect(0,0,dw,dh)}ix.drawImage(b,0,0,dw,dh);
+  if($('#bgm').value==='ai')await aiCut(ic,rf,b);else replaceBg(ic,rf,+$('#bgt').value,$('#bgm').value,$('#bgk').value);x.drawImage(ic,dx,dy)}
+ else x.drawImage(b,dx,dy,dw,dh);
+ return c}
+function imgsToPdf(cs){let d;cs.forEach((c,i)=>{const o=c.width>c.height?'l':'p',fm=[c.width,c.height];if(!i)d=new jspdf.jsPDF({unit:'px',format:fm,orientation:o,hotfixes:['px_scaling']});else d.addPage(fm,o);d.addImage(c.toDataURL('image/jpeg',qv()),'JPEG',0,0,c.width,c.height)});return d.output('blob')}
+async function pdfOpen(f){pdfjsLib.GlobalWorkerOptions.workerSrc=(LS.pdfjsLib||'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js').replace('pdf.min.js','pdf.worker.min.js');
+ try{return await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise}catch(e){throw Error(e&&e.name==='PasswordException'?'This PDF is password-protected.':'Corrupted or invalid PDF file.')}}
+async function pdf2img(it,to){const pdf=await pdfOpen(it.f),z=new JSZip(),sc=pdf.numPages>30?2:3;
+ for(let n=1;n<=pdf.numPages;n++){const pg=await pdf.getPage(n),vp=pg.getViewport({scale:sc}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+  await pg.render({canvasContext:x,viewport:vp}).promise;const tb=tsz(),b=tb>0?await fitSize(c,to,tb):await new Promise(r=>c.toBlob(r,M[to],qv()));if(!b)throw Error('Conversion failed: image encoding failed.');
+  if(pdf.numPages===1)return b;z.file('page-'+String(n).padStart(3,'0')+'.'+to,b);it.p=Math.max(10,Math.round(n/pdf.numPages*90));draw()}
+ it.on=it.f.name.replace(/\.[^.]*$/,'')+'_pages.zip';return z.generateAsync({type:'blob'})}
+async function audio(f,to){const ac=new(window.AudioContext||window.webkitAudioContext)();let ab;
+ try{ab=await ac.decodeAudioData(await f.arrayBuffer())}catch{throw Error('This browser can’t decode this audio file, or it is corrupted.')}finally{ac.close&&ac.close()}
+ const ch=Math.min(ab.numberOfChannels,2),sr=ab.sampleRate,n=ab.length,L=ab.getChannelData(0),Rr=ch>1?ab.getChannelData(1):L;
+ if(to==='wav'){const buf=new ArrayBuffer(44+n*ch*2),v=new DataView(buf),w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};
+  w(0,'RIFF');v.setUint32(4,36+n*ch*2,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,ch,true);v.setUint32(24,sr,true);v.setUint32(28,sr*ch*2,true);v.setUint16(32,ch*2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*ch*2,true);
+  let o=44;for(let i=0;i<n;i++)for(let c=0;c<ch;c++){const x=Math.max(-1,Math.min(1,(c?Rr:L)[i]));v.setInt16(o,x<0?x*32768:x*32767,true);o+=2}
+  return new Blob([buf],{type:M.wav})}
+ const I=a=>{const o=new Int16Array(a.length);for(let i=0;i<a.length;i++)o[i]=Math.max(-1,Math.min(1,a[i]))*32767;return o},l=I(L),r=ch>1?I(Rr):null,enc=new lamejs.Mp3Encoder(ch,sr,128),parts=[];
+ for(let i=0;i<n;i+=1152){const d=ch>1?enc.encodeBuffer(l.subarray(i,i+1152),r.subarray(i,i+1152)):enc.encodeBuffer(l.subarray(i,i+1152));if(d.length)parts.push(d)}
+ const e=enc.flush();if(e.length)parts.push(e);return new Blob(parts,{type:M.mp3})}
+const tsz=()=>{const v=parseFloat($('#tsz').value);return v>0?v*1048576:0};
+async function fitSize(c,to,max){const enc=(cv,q)=>new Promise(r=>cv.toBlob(r,M[to],q)),lossy=to!=='png';
+ const scl=k=>{const n=document.createElement('canvas');n.width=Math.max(1,Math.round(c.width*k));n.height=Math.max(1,Math.round(c.height*k));const x=n.getContext('2d');if(to==='jpg'){x.fillStyle='#fff';x.fillRect(0,0,n.width,n.height)}x.imageSmoothingQuality='high';x.drawImage(c,0,0,n.width,n.height);return n};
+ const top=await enc(c,lossy?1:undefined);if(top&&top.size<=max)return top;
+ if(lossy){const low=await enc(c,.5);if(low&&low.size<=max){let lo=.5,hi=1,best=low;for(let j=0;j<11;j++){const m=(lo+hi)/2,t=await enc(c,m);if(t&&t.size<=max){best=t;lo=m}else hi=m}return best}}
+ let lo=.02,hi=1,best=null;for(let j=0;j<13;j++){const m=(lo+hi)/2,t=await enc(scl(m),lossy?.8:undefined);if(t&&t.size<=max){best=t;lo=m}else hi=m}
+ if(!best||Math.min(c.width,c.height)*lo<32)throw Error('Can’t reach '+(max/1048576).toFixed(2)+' MB without making the image too small. Try a larger size.');return best}
+async function mkPptx(t){const px=new PptxGenJS();px.layout='LAYOUT_16x9';
+ const blocks=t.replace(/\r/g,'').split(/\n{2,}/).map(b=>b.split('\n').filter(l=>l.trim())).filter(b=>b.length);
+ blocks.forEach(b=>{const k=Math.max(1,Math.ceil((b.length-1)/9));for(let i=0;i<k;i++){const sl=px.addSlide();sl.addText(b[0],{x:.5,y:.4,w:9,h:1,fontSize:28,bold:true,fit:'shrink'});
+  const body=b.slice(1+i*9,1+(i+1)*9);if(body.length)sl.addText(body.join('\n'),{x:.5,y:1.5,w:9,h:3.7,fontSize:18,valign:'top',fit:'shrink'})}});
+ return px.write({outputType:'blob'})}
+async function pdf2pptx(it){const pdf=await pdfOpen(it.f),px=new PptxGenJS();
+ for(let n=1;n<=pdf.numPages;n++){const pg=await pdf.getPage(n),vp=pg.getViewport({scale:2}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+  await pg.render({canvasContext:x,viewport:vp}).promise;if(n===1){const u=pg.getViewport({scale:1});px.defineLayout({name:'PG',width:u.width/72,height:u.height/72});px.layout='PG'}
+  px.addSlide().addImage({data:c.toDataURL('image/jpeg',qv()).replace(/^data:/,''),x:0,y:0,w:'100%',h:'100%'});it.p=Math.max(10,Math.round(n/pdf.numPages*90));draw()}
+ return px.write({outputType:'blob'})}
+async function conv(it){const {f,from,to}=it;
+ if(IMG.includes(from)){const c=await toCanvas(f,to==='jpg'||to==='pdf');if(to==='pdf')return imgsToPdf([c]);
+  const tb=tsz();if(tb>0)return fitSize(c,to,tb);
+  return new Promise((r,j)=>c.toBlob(o=>o?r(o):j(Error('This browser can’t encode '+to.toUpperCase())),M[to],qv()))}
+ if(['csv','tsv','xlsx'].includes(from)){let rows;
+  if(from==='xlsx'){const wb=new ExcelJS.Workbook();await wb.xlsx.load(await f.arrayBuffer()).catch(()=>{throw Error('Corrupted or invalid XLSX file.')});
+   const ws=wb.worksheets[0];if(!ws)throw Error('The workbook has no sheets.');
+   const cell=v=>v==null?'':v instanceof Date?v.toISOString():typeof v==='object'?cell(v.result??v.text??(v.richText?v.richText.map(r=>r.text).join(''):'')):String(v);
+   rows=[];ws.eachRow({includeEmpty:true},r=>rows.push(Array.from(r.values.slice(1),cell)))}
+  else rows=Papa.parse(await f.text(),{delimiter:from==='tsv'?'\t':',',skipEmptyLines:true}).data;
+  if(to==='xlsx'){const wb=new ExcelJS.Workbook();wb.addWorksheet('Sheet1').addRows(rows);return new Blob([await wb.xlsx.writeBuffer()],{type:M.xlsx})}
+  return new Blob([Papa.unparse(rows,{delimiter:to==='tsv'?'\t':',',newline:'\n'})],{type:M[to]})}
+ if(from==='srt'||from==='vtt')return new Blob([subs(await f.text(),to)],{type:M[to]});
+ if(AUD.includes(from))return audio(f,to);
+ if(from==='pdf'&&(to==='jpg'||to==='png'))return pdf2img(it,to);
+ if(from==='pdf'&&to==='pptx')return pdf2pptx(it);
+ if(DOCS.includes(from)){
+  if(to==='html'){if(from==='docx'){const r=await mammoth.convertToHtml({arrayBuffer:await f.arrayBuffer()}).catch(()=>{throw Error('Corrupted or invalid DOCX file.')});return shell(r.value,f.name)}
+   if(from==='md')return shell(marked.parse(await f.text()),f.name);
+   const t=await readText(f,from,it);if(!t.trim())throw Error('The file contains no text to convert.');return shell(t.split(/\n{2,}/).map(p=>'<p>'+esc(p).replace(/\n/g,'<br>')+'</p>').join(''),f.name)}
+  return writeDoc(await readText(f,from,it),to)}
+ throw Error('Unsupported conversion.')}
+const addDone=(name,blob,from,to)=>{items.push({id:crypto.randomUUID(),f:new File([blob],name),from,to,st:'Completed',p:100,blob,out:name});draw()};
+const addFail=(name,msg)=>{items.push({id:crypto.randomUUID(),f:new File([],name),from:'',to:'',st:'Failed',p:0,err:msg});draw()};
+const toolErr=(e,fb)=>e instanceof ReferenceError?LIBERR:/encrypt/i.test(e.message)?'A PDF is password-protected.':(fb||e.message);
+async function mergePdfs(){try{const o=await PDFLib.PDFDocument.create();for(const i of items.filter(i=>i.from==='pdf'&&i.st==='Waiting')){const s=await PDFLib.PDFDocument.load(await i.f.arrayBuffer());(await o.copyPages(s,s.getPageIndices())).forEach(p=>o.addPage(p))}
+ addDone('merged.pdf',new Blob([await o.save()],{type:M.pdf}),'pdf','pdf')}catch(e){addFail('Merge PDFs',toolErr(e,'Could not merge: a PDF is corrupted or invalid.'))}}
+async function splitPdf(it){try{const s=await PDFLib.PDFDocument.load(await it.f.arrayBuffer()),n=s.getPageCount();if(n<2)throw Error('This PDF has only one page.');const z=new JSZip();
+ for(let i=0;i<n;i++){const o=await PDFLib.PDFDocument.create();o.addPage((await o.copyPages(s,[i]))[0]);z.file('page-'+String(i+1).padStart(3,'0')+'.pdf',await o.save())}
+ addDone(safe(it.f.name.replace(/\.[^.]*$/,'')+'_split.zip','zip'),await z.generateAsync({type:'blob'}),'pdf','zip')}catch(e){addFail('Split '+it.f.name,toolErr(e,'Could not split: the PDF is corrupted or invalid.'))}}
+async function mergeImgs(){try{const cs=[];for(const i of items.filter(i=>IMG.includes(i.from)&&i.st==='Waiting'))cs.push(await toCanvas(i.f,true));addDone('images.pdf',imgsToPdf(cs),'jpg','pdf')}catch(e){addFail('Images → one PDF',toolErr(e))}}
+async function run(it){if(it.st==='Converting'||!it.to)return;it.st='Converting';it.p=10;it.err=null;it.on=null;it.msg=null;draw();
+ try{await libsReady;const b=await conv(it);if(!b||!b.size)throw Error('Conversion failed: no valid output was produced.');
+  it.blob=b;it.out=it.on?safe(it.on,'zip'):safe(it.f.name,it.to);it.st='Completed';it.p=100;log(it,'Completed')}
+ catch(e){it.st='Failed';it.err=e instanceof ReferenceError?'A converter library did not load. Check your internet connection and reload.':(e.message||'Conversion failed.');it.out=safe(it.f.name,it.to);log(it,'Failed')}draw()}
+async function dl(it){if(!it.blob)return;
+ try{const d=window.claude?await claude.use('downloads'):null;if(d){await d.save({filename:it.out,data:it.blob});return}}catch(e){if(e&&e.code==='declined')return}
+ const a=document.createElement('a');a.href=URL.createObjectURL(it.blob);a.download=it.out;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e4)}
+function hist(){try{return JSON.parse(localStorage.getItem('ff.h')||'[]')}catch{return[]}}
+function log(it,s){try{localStorage.setItem('ff.h',JSON.stringify([{n:it.f.name,o:it.out,a:it.from,b:it.to,t:new Date().toLocaleString(),s},...hist()].slice(0,50)))}catch{}}
+function draw(){const q=$('#q');q.textContent='';$('#bar').classList.toggle('hide',!items.length);$('#opt').classList.toggle('hide',!items.some(i=>IMG.includes(i.from)||i.from==='pdf'));$('#mp').classList.toggle('hide',items.filter(i=>i.from==='pdf'&&i.st==='Waiting').length<2);$('#mi').classList.toggle('hide',items.filter(i=>IMG.includes(i.from)&&i.st==='Waiting').length<2);pvCheck();
+ let nk=0;items.forEach(it=>{const c=el('div','card'),r=el('div','row');if(!it.seen){c.classList.add('in');c.style.animationDelay=(nk++*80)+'ms';it.seen=true}const l=el('div');l.style.flex='1';l.style.minWidth='0';
+  const n=el('b',null,it.f.name);n.style.wordBreak='break-all';l.append(n,el('div','mut','Type: '+it.from.toUpperCase()+' · Size: '+fmt(it.f.size)));
+  r.append(l,el('span','mut',it.st==='Completed'?'✓ Completed':it.st));const ci=icon(catOf(it.from));ci.className='ico';r.prepend(ci);c.append(r);
+  if(it.st==='Waiting'||it.st==='Converting'){const g=el('div','row');g.style.marginTop='8px';
+   const s=el('select');s.disabled=it.st==='Converting';s.setAttribute('aria-label','Convert to');R[it.from].forEach(t=>{const o=el('option',null,t.toUpperCase());o.value=t;s.append(o)});s.value=it.to;s.onchange=()=>it.to=s.value;
+   g.append(el('span','mut','Convert From '+it.from.toUpperCase()+' to'),s);c.append(g)}
+  if(it.st==='Converting'){c.append(el('div',null,(it.msg||'Converting...')+' '+it.p+'%'));const b=el('div','bar'),i=el('i');i.style.width=it.p+'%';b.append(i);c.append(b)}
+  if(it.st==='Failed'){const e=el('div','er',it.err);e.setAttribute('role','alert');c.append(e)}
+  if(it.st==='Completed'){const o=el('div','ok'+(it.popped?'':' pop')),info=el('div',null,'');it.popped=true;
+   const upd2=()=>{info.textContent=it.out+' · '+it.from.toUpperCase()+' → '+it.to.toUpperCase()+' · '+fmt(it.blob.size)};upd2();o.append(el('b',null,'✓ Conversion Complete'),info);c.append(o);
+   const rr=el('div','row'),dot=it.out.lastIndexOf('.'),ext=dot>0?it.out.slice(dot):'',ri=document.createElement('input');rr.style.marginTop='8px';
+   ri.type='text';ri.className='rn';ri.maxLength=100;ri.value=dot>0?it.out.slice(0,dot):it.out;ri.setAttribute('aria-label','File name');
+   ri.oninput=()=>{const n=ri.value.replace(/[\\\/:*?"<>|\u0000-\u001f]+/g,'_').trim().slice(0,100)||'file';it.out=n+ext;upd2()};
+   rr.append(el('span','mut','Rename:'),ri,el('span','mut',ext));c.append(rr)}
+  const a=el('div','row');a.style.marginTop='10px';
+  if(it.st==='Waiting'){const b=el('button','p','Convert File');b.onclick=()=>run(it);a.append(b)}
+  if(it.st==='Waiting'&&it.from==='pdf'){const sp=el('button',null,'Split pages');sp.onclick=()=>splitPdf(it);a.append(sp)}
+  if(it.st==='Completed'){const b=el('button','p','Download File');b.onclick=()=>dl(it);a.append(b)}
+  const x=el('button',null,'Remove');x.onclick=()=>{items=items.filter(i=>i!==it);draw()};a.append(x);c.append(a);q.append(c)})}
+function drawH(){const h=$('#hl');h.textContent='';const L=hist();if(!L.length)h.append(el('p','mut','No conversions yet. Convert a file and it will show up here.'));
+ L.forEach(e=>{const c=el('div','card');c.append(el('b',null,e.n+' → '+e.o),el('div','mut',e.a.toUpperCase()+' → '+e.b.toUpperCase()+' · '+e.t+' · '+e.s));h.append(c)})}
+$('#ca').onclick=()=>items.filter(i=>i.st==='Waiting').forEach(run);
+$('#da').onclick=async()=>{for(const i of items.filter(i=>i.st==='Completed'))await dl(i)};
+document.querySelectorAll('#opt [data-mb]').forEach(b=>b.onclick=()=>{$('#tsz').value=b.dataset.mb});
+$('#bg').onchange=()=>{$('#bgr').checked=['white','black','custom','transparent'].includes($('#bg').value)};
+$('#opt').addEventListener('input',schedPv);$('#opt').addEventListener('change',schedPv);
+$('#pvo').onclick=e=>{const c=e.target,r=c.getBoundingClientRect(),x=Math.min(c.width-1,Math.max(0,Math.floor((e.clientX-r.left)*c.width/r.width))),y=Math.min(c.height-1,Math.max(0,Math.floor((e.clientY-r.top)*c.height/r.height))),d=c.getContext('2d').getImageData(x,y,1,1).data;
+ $('#bgk').value='#'+[d[0],d[1],d[2]].map(v=>v.toString(16).padStart(2,'0')).join('');$('#bgm').value='key';$('#bgr').checked=true;if($('#bg').value==='auto')$('#bg').value='white';schedPv()};
+$('#cp').onclick=async()=>{try{await navigator.clipboard.writeText('vinayakgoudkasani@gmail.com');$('#cp').textContent='Copied ✓'}catch{$('#cp').textContent='Copy failed – select the email above'}};
+$('#mp').onclick=mergePdfs;$('#mi').onclick=mergeImgs;
+$('#dz').onclick=async()=>{const dn=items.filter(i=>i.st==='Completed');if(!dn.length)return;try{const z=new JSZip(),seen={};for(const i of dn){let n=i.out;if(seen[n])n=(seen[n]++)+'_'+n;else seen[n]=1;z.file(n,i.blob)}dl({blob:await z.generateAsync({type:'blob'}),out:'fileflex-converted.zip'})}catch(e){addFail('Download ZIP',toolErr(e))}};
+$('#cl').onclick=()=>{items=[];draw()};
+$('#ch').onclick=()=>{try{localStorage.removeItem('ff.h')}catch{}drawH()};
+const dz=$('#drop'),fi=$('#fi');fi.onchange=()=>{add(fi.files);fi.value=''};
+const DT=$('#dt'),setDrag=on=>{dz.classList.toggle('on',on);DT.textContent=on?'Release to add your files':'Drop your file here'};
+function pulse(){dz.classList.remove('dropped');void dz.offsetWidth;dz.classList.add('dropped');setTimeout(()=>dz.classList.remove('dropped'),520)}
+dz.ondragover=e=>{e.preventDefault();setDrag(true)};dz.ondragleave=e=>{if(!dz.contains(e.relatedTarget))setDrag(false)};
+dz.ondrop=e=>{e.preventDefault();setDrag(false);add(e.dataTransfer.files)};
+addEventListener('dragover',e=>e.preventDefault());addEventListener('drop',e=>{e.preventDefault();if(!dz.contains(e.target)&&e.dataTransfer&&e.dataTransfer.files.length)add(e.dataTransfer.files)});
+document.addEventListener('pointerdown',e=>{const t=e.target.closest&&e.target.closest('button,#drop');if(!t||t.disabled)return;const r=t.getBoundingClientRect(),d=Math.max(r.width,r.height)*2,x=document.createElement('span');
+ x.className='rip';x.style.cssText='width:'+d+'px;height:'+d+'px;left:'+(e.clientX-r.left-d/2)+'px;top:'+(e.clientY-r.top-d/2)+'px';t.append(x);setTimeout(()=>x.remove(),650)});
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-current',x===b));
+ ['c','h','a','s'].forEach(s=>$('#'+s).classList.toggle('hide',s!==b.dataset.t));if(b.dataset.t==='h')drawH()});
+$('#th').onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).colorScheme==='dark';r.dataset.theme=d?'light':'dark';try{localStorage.setItem('ff.th',r.dataset.theme)}catch{}};
+const IC={img:'<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M4 18l5-5 4 4 3-3 4 4"/>',video:'<rect x="3" y="5" width="13" height="14" rx="3"/><path d="M16 10l5-3v10l-5-3z"/>',audio:'<path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2.5"/><circle cx="17" cy="16" r="2.5"/>',pdf:'<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5"/><rect x="8.5" y="13" width="7" height="4" rx="1"/>',doc:'<path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 12h7M9 15h7M9 18h4"/>',sheet:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/>',subs:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7 12h4M13 12h4M7 15h2M11 15h6"/>'};
+const CAT={img:['jpg','png','webp','bmp','gif'],audio:['mp3','wav','m4a','ogg','flac'],video:['mp4','mov','webm'],pdf:['pdf'],doc:['docx','pptx','txt','rtf','md','html'],sheet:['xlsx','csv','tsv'],subs:['srt','vtt']};
+const CATN={img:'Images',video:'Video → audio',audio:'Audio',pdf:'PDF',doc:'Documents',sheet:'Spreadsheets',subs:'Subtitles'};
+const catOf=e=>Object.keys(CAT).find(k=>CAT[k].includes(e))||'doc';
+function icon(k,sz){const e=document.createElement('span');e.className='ic';e.innerHTML='<svg width="'+(sz||22)+'" height="'+(sz||22)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[k]+'</svg>';return e}
+function buildHome(){const n=Object.values(R).reduce((a,b)=>a+b.length,0);
+ $('#nopt').textContent=n;$('#stats').innerHTML='<div class="stat"><b>'+n+'</b><span>conversion options</span></div><div class="stat"><b>6</b><span>file tools</span></div><div class="stat"><b>0</b><span>uploads</span></div>';
+ Object.keys(CATN).forEach(k=>{const c=el('span','chip',CATN[k]);c.prepend(icon(k,18));$('#cats').append(c);
+  const d=el('div','card'),h=el('div','row');h.append(icon(k,20),el('b',null,CATN[k]));const w=el('div','fm');CAT[k].forEach(x=>w.append(el('i',null,x)));d.append(h,w);$('#fmts').append(d)})}
+buildHome();
+const C='https://cdnjs.cloudflare.com/ajax/libs/',J='https://cdn.jsdelivr.net/npm/',LS={};
+const LIB=[['ExcelJS','XLSX files',[C+'exceljs/4.4.0/exceljs.min.js',J+'exceljs@4.4.0/dist/exceljs.min.js']],
+ ['Papa','CSV/TSV files',[C+'PapaParse/5.4.1/papaparse.min.js',J+'papaparse@5.4.1/papaparse.min.js']],
+ ['jspdf','PDF output',[C+'jspdf/2.5.1/jspdf.umd.min.js',J+'jspdf@2.5.1/dist/jspdf.umd.min.js']],
+ ['mammoth','DOCX input',[C+'mammoth/1.6.0/mammoth.browser.min.js',J+'mammoth@1.6.0/mammoth.browser.min.js']],
+ ['JSZip','DOCX/PPTX/ZIP output',[C+'jszip/3.10.1/jszip.min.js',J+'jszip@3.10.1/dist/jszip.min.js']],
+ ['pdfjsLib','PDF input',[C+'pdf.js/3.11.174/pdf.min.js',J+'pdfjs-dist@3.11.174/build/pdf.min.js']],
+ ['PDFLib','Merge/Split PDF',[C+'pdf-lib/1.17.1/pdf-lib.min.js',J+'pdf-lib@1.17.1/dist/pdf-lib.min.js']],
+ ['marked','Markdown',[C+'marked/4.3.0/marked.min.js',J+'marked@4.3.0/marked.min.js']],
+ ['lamejs','MP3 output',[C+'lamejs/1.2.1/lame.min.js',J+'lamejs@1.2.1/lame.min.js']],
+ ['PptxGenJS','PPTX output',[J+'pptxgenjs@3.12.0/dist/pptxgen.bundle.js',C+'pptxgenjs/3.12.0/pptxgen.bundle.js']]];
+const ldOne=u=>new Promise(r=>{const x=document.createElement('script');x.src=u;x.onload=()=>r(true);x.onerror=()=>{x.remove();r(false)};setTimeout(()=>r(false),20000);document.head.append(x)});
+async function ensure(l){const g=l[0];if(typeof window[g]!=='undefined')return true;for(const u of l[2]){if(await ldOne(u)&&typeof window[g]!=='undefined'){LS[g]=u;return true}}return false}
+async function loadLibs(){const res=await Promise.all(LIB.map(ensure)),miss=LIB.filter((_,i)=>!res[i]),b=$('#lib');
+ if(!miss.length){b.classList.add('hide');return}
+ b.classList.remove('hide');b.textContent='Some converters did not load, so these will fail: '+miss.map(x=>x[1]).join(', ')+'. Check your connection (turn off Data Saver, VPN or ad-blocking DNS) and tap Retry. ';
+ const rb=document.createElement('button');rb.type='button';rb.textContent='Retry';rb.onclick=()=>{b.textContent='Loading…';libsReady=loadLibs()};b.append(rb)}
+let libsReady=loadLibs();
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches)document.querySelectorAll('.stat b').forEach(b=>{const n=+b.textContent,t0=performance.now(),f=t=>{const k=Math.min(1,(t-t0)/800);b.textContent=Math.round(n*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)};requestAnimationFrame(f)});
+try{const t=localStorage.getItem('ff.th');if(t)document.documentElement.dataset.theme=t}catch{}
+
+let dp=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;$('#inst').classList.remove('hide')});
+$('#inst').onclick=async()=>{if(!dp)return;dp.prompt();await dp.userChoice;dp=null;$('#inst').classList.add('hide')};
+addEventListener('appinstalled',()=>$('#inst').classList.add('hide'));
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+</script></body></html>
